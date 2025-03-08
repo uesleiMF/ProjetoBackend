@@ -1,33 +1,33 @@
-// importar o express para poder acessar o seu metodo de rotas e as funcoes http.
+// Importar o express para configurar as rotas
 const express = require("express");
-// importar o controller para poder chamar as suas funcoes na rota
-const ProdutosController = require("./../controllers/produtos.controller");
 
-const ProdutosControllerFunc = require('./../controllers/produtos.func.controller');
-// inicializar a classe controller
+// Importar o controller de produtos
+const ProdutosController = require("../controllers/produtos.controller");
+const ProdutosControllerFunc = require("../controllers/produtos.func.controller");
+
+// Inicializar a classe do controller
 const produtosController = new ProdutosController();
 
-// inicializar a instancia  da rota do express para poder gerenciar minhas chamadas(rotas)
+// Criar uma instância do router do Express
 const router = express.Router();
 
-// [GET] - retornar a lista de muscas cadastradas no banco de dados(mensagem)
-// requisicao = o que vem do cliente(front) para o server (back).
-// response = o que o server(backend) responde para o client(frontend).
+// [GET] - Retornar a lista de produtos cadastrados no banco de dados
 router.get("/", produtosController.getProdutos);
 
-router.get('/listar', ProdutosControllerFunc.getAll);
+// [GET] - Listar produtos usando a versão funcional do controller
+router.get("/listar", ProdutosControllerFunc.getAll);
 
-// [GET] /musicas/{id} - retornar uma unica musica de acordo com o seu id
+// [GET] - Retornar um único produto pelo ID
 router.get("/:id", produtosController.getProdutoById);
 
-// [POST] /musicas/add - cadastrar uma nova musica no nosso banco de dados.
-router.post("/add", produtosController.createProdut);
+// [POST] - Cadastrar um novo produto no banco de dados
+router.post("/add", produtosController.createProduto);
 
-// [PUT] /musicas/{id} - Editar uma musica pre cadastrada de acordo com o seu id.
-router.put("/:id", produtosController.editProdut);
+// [PUT] - Editar um produto já cadastrado pelo ID
+router.put("/:id", produtosController.editProduto);
 
-// [DELETE] /musicas/{id} - Excluir uma musica pré cadastrada no DB por id.
-router.delete("/:id", produtosController.deleteProdut);
+// [DELETE] - Excluir um produto pelo ID
+router.delete("/:id", produtosController.deleteProduto);
 
-// exporto o modulo de rotas para poder ser acessavel via index.
+// Exportar o módulo de rotas para ser usado no index.js
 module.exports = router;
