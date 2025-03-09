@@ -1,27 +1,24 @@
-if(process.env.NODE_ENV !== 'production') {
-  require('dotenv').config()
-}
-
-
 // Importar as dependências
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const multer = require('multer');
+const dotenv = require('dotenv');
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config();
+}
 
-
-
+// Inicializar o Express
 const app = express();
-const Conn = require('./conn/conn');
 
-// Middlewares
+// Configuração do middleware
 app.use(express.json()); // Permite JSON no corpo das requisições
 app.use(cors()); // Habilita CORS para evitar erros de requisição externa
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Serve as imagens na pasta 'uploads'
 
-// Tipos de imagens permitidos
+// Configuração do Multer para upload de arquivos
 const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
 
-// Configuração do armazenamento para uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'uploads/'); // Diretório onde as imagens serão salvas
@@ -31,7 +28,6 @@ const storage = multer.diskStorage({
   }
 });
 
-// Configuração do Multer com verificação de tipo de arquivo
 const upload = multer({
   storage: storage,
   fileFilter: (req, file, cb) => {
@@ -42,8 +38,26 @@ const upload = multer({
   }
 });
 
-// Importar o controlador de produtos
-const ProdutosController = require('./controllers/produtos.controller');
+// Roteamento e controladores
+class ProdutosController {
+  // Função para obter todos os produtos
+  getProdutos(req, res) {
+    // Exemplo de produto
+    const produtos = [
+      { 
+        _id: 1,
+        titulo: 'Produto 1',
+        descricao: 'Descrição do produto 1',
+        imagemUrl: '/uploads/1632512367195.jpg'
+      },
+      // Outros produtos...
+    ];
+    res.json(produtos);
+  }
+  
+  // Outros métodos de CRUD (ex: create, update, delete) podem ser adicionados aqui
+}
+
 const produtosController = new ProdutosController();
 
 // Rota para upload de imagens
@@ -73,20 +87,15 @@ app.post('/upload', upload.single('file'), (req, res) => {
   }
 });
 
-// Roteamento de produtos
+// Rota para obter produtos
 app.get('/produtos', produtosController.getProdutos);
-app.get('/produtos/:id', produtosController.getProdutoById);
-app.post('/produtos', produtosController.createProduto);
-app.put('/produtos/:id', produtosController.editProduto);
-app.delete('/produtos/:id', produtosController.deleteProduto);
-
-
 
 // Conexão com o banco de dados
 const db_url = process.env.DB_URL;
 const db_user = process.env.DB_USER;
 const db_pass = process.env.DB_PASS;
 const db_data = process.env.DB_DATA;
+const Conn = require('./conn/conn');
 Conn(db_url, db_user, db_pass, db_data);
 
 // Inicialização do servidor
