@@ -37,6 +37,13 @@ const upload = multer({
     cb(null, true);
   }
 });
+const cloudinary = require('cloudinary').v2;
+
+
+// Configuração do Cloudinary usando a variável de ambiente CLOUDINARY_URL
+cloudinary.config({
+  url: process.env.CLOUDINARY_URL,
+});
 
 // Roteamento e controladores
 class ProdutosController {

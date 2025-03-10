@@ -1,6 +1,11 @@
-// Importar o serviço de produtos para acessar as funções que executam queries no banco.
+const cloudinary = require('../config/cloudinaryConfig'); // Importando a configuração do Cloudinary
 const ProdutosService = require('../services/produtos.service');
 const produtosService = new ProdutosService(); // Inicializando a classe do serviço
+const multer = require('multer');
+
+// Configuração do Multer para armazenar arquivos temporariamente na memória
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 // Criar a classe de controle onde estarão os métodos
 class ProdutosController {
@@ -27,22 +32,38 @@ class ProdutosController {
     }
   };
 
-  // Cadastra um novo produto
+  // Cadastra um novo produto com upload de imagem para o Cloudinary
   createProduto = async (req, res) => {
     try {
-      const { titulo, descricao, prioridade, status, imagemUrl, dataValidade } = req.body;
+      const { titulo, descricao, prioridade, status, dataValidade } = req.body;
+      const imagem = req.file; // A imagem recebida através do Multer
 
       // Validação de campos obrigatórios
       if (!titulo || !descricao || !prioridade || !status) {
         return res.status(400).json({ error: "Título, descrição, prioridade e status são obrigatórios" });
       }
 
+      // Validação da data
+      if (!Date.parse(dataValidade)) {
+        return res.status(400).json({ error: "Data de validade inválida" });
+      }
+
+      // Validação e upload da imagem para o Cloudinary
+      let imagemUrl = '';
+      if (imagem) {
+        const result = await cloudinary.uploader.upload(imagem.buffer, {
+          folder: 'produtos', // Pasta para organizar as imagens no Cloudinary
+        });
+        imagemUrl = result.secure_url; // URL da imagem enviada ao Cloudinary
+      }
+
+      // Criar o novo produto no banco
       const novoProduto = await produtosService.create({
         titulo,
         descricao,
         prioridade,
         status,
-        imagemUrl,
+        imagemUrl, // URL da imagem do Cloudinary
         dataValidade
       });
 
@@ -52,7 +73,7 @@ class ProdutosController {
     }
   };
 
-  // Atualiza um produto pelo ID
+  // Atualiza um produto pelo ID (com a possibilidade de atualizar a imagem também)
   editProduto = async (req, res) => {
     try {
       const { id } = req.params;
